@@ -1,6 +1,9 @@
 package com.bankingApp.offersToClients.rules;
 
 import com.bankingApp.offersToClients.dto.RecommendationDto;
+import com.bankingApp.offersToClients.model.ProductType;
+import com.bankingApp.offersToClients.model.TransactionSums;
+import com.bankingApp.offersToClients.model.TransactionType;
 import com.bankingApp.offersToClients.repository.RecommendationsRepository;
 import org.springframework.stereotype.Component;
 
@@ -19,17 +22,17 @@ public class TopSavingRuleSet implements RecommendationRuleSet {
     @Override
     public Optional<RecommendationDto> check(UUID userId) {
 
-        boolean hasTransaction = recommendationsRepository.hasTransactionsOfType(userId,
-                "DEBIT");
-        int sumDebitDeposit = recommendationsRepository.getSumTransactions(userId, "DEBIT",
-                "DEBIT");
-        int sumSavingDeposit = recommendationsRepository.getSumTransactions(userId, "SAVING",
-                "DEPOSIT");
-        int sumDebitWithdraw = recommendationsRepository.getSumTransactions(userId, "DEBIT",
-                "WITHDRAW");
+        boolean hasDebit = recommendationsRepository.countTransactions(userId, ProductType.DEBIT) > 0;
+        int sumDebitDeposit = recommendationsRepository.sumTransactions(
+                userId, ProductType.DEBIT, TransactionType.DEPOSIT);
+        int sumSavingDeposit = recommendationsRepository.sumTransactions(
+                userId, ProductType.SAVING, TransactionType.DEPOSIT);
+        TransactionSums debitSums = recommendationsRepository.sumDepositAndWithdraw(
+                userId, ProductType.DEBIT);
 
-        if (hasTransaction && (sumDebitDeposit >= 50_000 || sumSavingDeposit >= 50_000)
-                && sumDebitDeposit > sumDebitWithdraw) {
+        if (hasDebit
+                && (sumDebitDeposit >= 50_000 || sumSavingDeposit >= 50_000)
+                && debitSums.deposit() > debitSums.withdraw()) {
             return Optional.of(new RecommendationDto(
                     "Top Saving",
                     UUID.fromString("59efc529-2fff-41af-baff-90ccd7402925"),

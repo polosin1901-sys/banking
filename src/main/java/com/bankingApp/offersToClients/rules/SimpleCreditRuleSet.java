@@ -1,6 +1,9 @@
 package com.bankingApp.offersToClients.rules;
 
 import com.bankingApp.offersToClients.dto.RecommendationDto;
+import com.bankingApp.offersToClients.model.ProductType;
+import com.bankingApp.offersToClients.model.TransactionSums;
+import com.bankingApp.offersToClients.model.TransactionType;
 import com.bankingApp.offersToClients.repository.RecommendationsRepository;
 import org.springframework.stereotype.Component;
 
@@ -18,13 +21,15 @@ public class SimpleCreditRuleSet implements RecommendationRuleSet {
 
     @Override
     public Optional<RecommendationDto> check(UUID userId) {
-        boolean hasNoTransactions = !recommendationsRepository.hasTransactionsOfType(userId,
-                "CREDIT");
-        int sumDebitDeposit = recommendationsRepository.getSumTransactions(userId, "DEBIT",
-                "DEBIT");
-        int sumDebitWithdraw = recommendationsRepository.getSumTransactions(userId, "DEBIT",
-                "WITHDRAW");
-        if (hasNoTransactions && (sumDebitDeposit > sumDebitWithdraw) && sumDebitDeposit > 100_000) {
+        boolean hasNoCredit = recommendationsRepository.countTransactions(
+                userId, ProductType.CREDIT) == 0;
+        int sumDebitWithdraw = recommendationsRepository.sumTransactions(
+                userId, ProductType.DEBIT, TransactionType.WITHDRAW);
+        TransactionSums debitSums = recommendationsRepository.sumDepositAndWithdraw(
+                userId, ProductType.DEBIT);
+        if (hasNoCredit
+                && debitSums.deposit() > debitSums.withdraw()
+                && sumDebitWithdraw > 100_000) {
             return Optional.of(new RecommendationDto(
                     "Простой кредит",
                     UUID.fromString("ab138afb-f3ba-4a93-b74f-0fcee86d447f"),

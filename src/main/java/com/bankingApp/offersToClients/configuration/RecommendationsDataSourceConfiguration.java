@@ -20,7 +20,7 @@ public class RecommendationsDataSourceConfiguration {
         var dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(recommendationsUrl);
         dataSource.setDriverClassName("org.h2.Driver");
-        dataSource.setReadOnly(true); // Важно: база только для чтения
+        dataSource.setReadOnly(true);
         return dataSource;
     }
 
