@@ -10,5 +10,4 @@ public class OffersToClientsApplication {
 		SpringApplication.run(OffersToClientsApplication.class, args);
 	}
 
-
 }
