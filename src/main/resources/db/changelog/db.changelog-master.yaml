@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 000-init
+      author: student
+      changes:
+        - tagDatabase:
+            tag: init
+
+  - include:
+      file: 001-create-rule-tables.yaml
+      relativeToChangelogFile: true
+
+  - include:
+      file: 002-create-rule-stat.yaml
+      relativeToChangelogFile: true
