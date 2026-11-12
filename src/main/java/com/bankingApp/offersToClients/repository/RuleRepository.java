@@ -12,4 +12,7 @@ public interface RuleRepository extends JpaRepository<RuleEntity,Long> {
     @EntityGraph(attributePaths = {"rule", "rule.arguments"})
     @Query("select distinct r from RuleEntity r")
     List<RuleEntity> findAllWithQueries();
+
+    @Query("select r.id from RuleEntity r order by r.id")
+    List<Long> findAllIds();
 }

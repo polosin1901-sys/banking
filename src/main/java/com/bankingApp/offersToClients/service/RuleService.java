@@ -5,6 +5,7 @@ import com.bankingApp.offersToClients.dto.RuleRequest;
 import com.bankingApp.offersToClients.dto.RuleResponse;
 import com.bankingApp.offersToClients.entity.QueryEntity;
 import com.bankingApp.offersToClients.entity.RuleEntity;
+import com.bankingApp.offersToClients.model.ComparisonOperator;
 import com.bankingApp.offersToClients.model.QueryType;
 import com.bankingApp.offersToClients.model.ProductType;
 import com.bankingApp.offersToClients.model.TransactionType;
@@ -17,9 +18,6 @@ import java.util.Set;
 
 @Service
 public class RuleService {
-
-    private static final Set<String> COMPARISON_OPERATORS =
-            Set.of(">", "<", "=", ">=", "<=");
 
     private final RuleRepository ruleRepository;
 
@@ -175,7 +173,9 @@ public class RuleService {
     }
 
     private void requireOperator(String value, String query) {
-        if (!COMPARISON_OPERATORS.contains(value)) {
+        try {
+            ComparisonOperator.fromString(value);
+        } catch (IllegalArgumentException exception) {
             throw new IllegalArgumentException(
                     "Query " + query + ": unsupported operator '" + value + "'"
             );
