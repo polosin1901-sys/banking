@@ -9,36 +9,52 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Builds the text replies of the Telegram bot.
+ *
+ * <p>Recommendations are produced by the same {@link RecommendationService} as the REST API,
+ * therefore dynamic rule hits caused by the bot are counted in the rule statistics.</p>
+ */
 @Service
 public class TelegramBotService {
 
     private static final String USER_NOT_FOUND = "Пользователь не найден";
+    private static final String NO_PRODUCTS = "— пока нет подходящих продуктов";
 
     private final UsersRepository usersRepository;
     private final RecommendationService recommendationService;
 
-    public TelegramBotService(UsersRepository usersRepository, RecommendationService recommendationService) {
+    public TelegramBotService(UsersRepository usersRepository,
+                              RecommendationService recommendationService) {
         this.usersRepository = usersRepository;
         this.recommendationService = recommendationService;
     }
 
+    /**
+     * @return greeting and command reference shown for {@code /start} and unknown commands
+     */
     public String help() {
         return """
                 Привет! Я помогу подобрать банковские продукты.
-                
+
                 Доступные команды:
                 /recommend <username> — рекомендации для клиента
-                
+
                 Пример: /recommend quintin.deckow
                 """;
     }
 
-    private String normalize(String userName) {
-        if (userName == null) {
-            return "";
-        }
-        String trimmed = userName.trim();
-        return trimmed.startsWith("@") ? trimmed.substring(1) : trimmed;
+    /**
+     * Looks up a client by username and formats personal recommendations.
+     *
+     * @param username Telegram username without or with a leading {@code @}
+     * @return greeting with the product list, or {@code Пользователь не найден} when the client
+     *         does not exist or several clients share the username
+     */
+    public String recommendation(String username) {
+        return usersRepository.findByUsername(normalize(username))
+                .map(this::formatRecommendations)
+                .orElse(USER_NOT_FOUND);
     }
 
     private String formatRecommendations(UserInfo user) {
@@ -46,20 +62,23 @@ public class TelegramBotService {
                 recommendationService.getRecommendations(user.id());
 
         String products = recommendations.isEmpty()
-                ? "— пока нет подходящих продуктов"
+                ? NO_PRODUCTS
                 : recommendations.stream()
-                  .map(recommendation ->
-                       "• " + recommendation.name() + "\n" + recommendation.text())
-                  .collect(Collectors.joining("\n\n"));
+                        .map(recommendation ->
+                                "• " + recommendation.name() + "\n" + recommendation.text())
+                        .collect(Collectors.joining("\n\n"));
 
         return "Здравствуйте, " + user.firstName() + " " + user.lastName() + "!\n"
                 + "Новые продукты для вас:\n"
                 + products;
     }
 
-    public String recommendation(String username) {
-        return usersRepository.findByUsername(normalize(username))
-                .map(this::formatRecommendations)
-                .orElse(USER_NOT_FOUND);
+    private String normalize(String username) {
+        if (username == null) {
+            return "";
+        }
+
+        String trimmed = username.trim();
+        return trimmed.startsWith("@") ? trimmed.substring(1) : trimmed;
     }
 }
