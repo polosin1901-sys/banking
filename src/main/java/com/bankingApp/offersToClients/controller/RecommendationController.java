@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * REST endpoint that returns product recommendations for a client.
+ */
 @RestController
 @RequestMapping("/recommendation")
 public class RecommendationController {
@@ -22,10 +25,16 @@ public class RecommendationController {
         this.recommendationService = recommendationService;
     }
 
+    /**
+     * Returns static and dynamic recommendations for the given client.
+     *
+     * @param userId client identifier
+     * @return client identifier together with the list of recommended products
+     */
     @GetMapping("/{user_id}")
-    public ResponseEntity<RecommendationResponse> getRecommendations(@PathVariable ("user_id")UUID userId) {
+    public ResponseEntity<RecommendationResponse> getRecommendations(
+            @PathVariable("user_id") UUID userId) {
         List<RecommendationDto> recommendations = recommendationService.getRecommendations(userId);
-       RecommendationResponse response = new RecommendationResponse(userId,recommendations);
-       return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new RecommendationResponse(userId, recommendations));
     }
 }

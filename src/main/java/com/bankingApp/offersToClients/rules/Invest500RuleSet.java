@@ -9,6 +9,12 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Static rule for the {@code Invest500} product.
+ *
+ * <p>Fires when the client has at least one debit transaction, no investments, and more than
+ * 1000 deposited on savings accounts.</p>
+ */
 @Component
 public class Invest500RuleSet implements RecommendationRuleSet {
 

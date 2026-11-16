@@ -8,6 +8,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Evaluates the {@code ACTIVE_USER_OF} query: the client has at least five transactions of the
+ * given product type.
+ */
 @Component
 public class ActiveUserOfQueryEvaluator implements QueryEvaluator {
 

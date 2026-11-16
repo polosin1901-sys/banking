@@ -1,11 +1,25 @@
 package com.bankingApp.offersToClients.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
+import jakarta.persistence.Table;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Dynamic recommendation rule created by the manager.
+ *
+ * <p>A rule fires when all queries of {@link #getRule()} match. Queries are stored in the
+ * {@code rule_query} table and keep their original order through the {@code position} column.</p>
+ */
 @Entity
 @Table(name = "recommendation_rule")
 public class RuleEntity {
@@ -23,7 +37,7 @@ public class RuleEntity {
     @Column(name = "product_text", nullable = false, columnDefinition = "text")
     private String productText;
 
-    @OneToMany(mappedBy = "rule", cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "rule", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn(name = "position")
     private List<QueryEntity> rule = new ArrayList<>();
 
@@ -38,6 +52,11 @@ public class RuleEntity {
         setRule(rule);
     }
 
+    /**
+     * Replaces the rule queries, keeping the bidirectional association consistent.
+     *
+     * @param rule new queries; {@code null} clears the rule
+     */
     public void setRule(List<QueryEntity> rule) {
         this.rule.clear();
         if (rule != null) {
@@ -45,6 +64,11 @@ public class RuleEntity {
         }
     }
 
+    /**
+     * Appends a query and links it back to this rule.
+     *
+     * @param query query to append
+     */
     public void addQuery(QueryEntity query) {
         query.setRule(this);
         this.rule.add(query);
@@ -69,6 +93,4 @@ public class RuleEntity {
     public List<QueryEntity> getRule() {
         return rule;
     }
-
-
 }

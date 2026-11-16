@@ -6,16 +6,22 @@ import com.bankingApp.offersToClients.dto.RuleResponse;
 import com.bankingApp.offersToClients.entity.QueryEntity;
 import com.bankingApp.offersToClients.entity.RuleEntity;
 import com.bankingApp.offersToClients.model.ComparisonOperator;
-import com.bankingApp.offersToClients.model.QueryType;
 import com.bankingApp.offersToClients.model.ProductType;
+import com.bankingApp.offersToClients.model.QueryType;
 import com.bankingApp.offersToClients.model.TransactionType;
 import com.bankingApp.offersToClients.repository.RuleRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
+/**
+ * Manages dynamic recommendation rules stored in PostgreSQL.
+ *
+ * <p>Incoming requests are validated before saving: every query must be known to
+ * {@link QueryType} and must carry the exact number and format of arguments expected by the
+ * matching query evaluator.</p>
+ */
 @Service
 public class RuleService {
 
@@ -25,6 +31,13 @@ public class RuleService {
         this.ruleRepository = ruleRepository;
     }
 
+    /**
+     * Validates and stores a new dynamic rule together with its queries.
+     *
+     * @param request rule description received from the manager
+     * @return stored rule with the generated identifier
+     * @throws IllegalArgumentException when the rule is incomplete or malformed
+     */
     @Transactional
     public RuleResponse createRule(RuleRequest request) {
         validate(request);
@@ -32,13 +45,22 @@ public class RuleService {
         return toResponse(rule);
     }
 
-    @Transactional
+    /**
+     * @return all dynamic rules with their queries in insertion order
+     */
+    @Transactional(readOnly = true)
     public List<RuleResponse> getAllRules() {
         return ruleRepository.findAllWithQueries().stream()
                 .map(this::toResponse)
                 .toList();
     }
 
+    /**
+     * Deletes a rule; statistics rows are removed by the database cascade.
+     *
+     * @param id rule identifier
+     * @return {@code true} when the rule existed and was deleted
+     */
     @Transactional
     public boolean deleteRule(Long id) {
         if (id == null || !ruleRepository.existsById(id)) {
@@ -122,6 +144,7 @@ public class RuleService {
                     "Query " + query.query() + ": arguments must not contain blank values"
             );
         }
+
         QueryType queryType = QueryType.fromString(query.query());
         switch (queryType) {
             case USER_OF, ACTIVE_USER_OF -> {

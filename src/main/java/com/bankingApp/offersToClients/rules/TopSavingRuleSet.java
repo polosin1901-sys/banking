@@ -10,6 +10,12 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Static rule for the {@code Top Saving} product.
+ *
+ * <p>Fires when the client has a debit account, deposits at least 50 000 to debit or savings
+ * accounts, and the debit account has more deposits than withdrawals.</p>
+ */
 @Component
 public class TopSavingRuleSet implements RecommendationRuleSet {
 

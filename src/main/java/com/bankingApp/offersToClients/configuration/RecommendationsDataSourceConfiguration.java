@@ -1,6 +1,5 @@
 package com.bankingApp.offersToClients.configuration;
 
-
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +9,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
+/**
+ * Read-only data source for the recommendations database (H2 file).
+ *
+ * <p>The connection is opened in read-only mode: the application never writes to client data.
+ * Repositories that need this database use {@code recommendationsJdbcTemplate}.</p>
+ */
 @Configuration
 public class RecommendationsDataSourceConfiguration {
 
