@@ -77,6 +77,7 @@ Swagger UI после запуска: <http://localhost:8080/swagger-ui.html>.
 | [OpenAPI / Swagger](docs/OpenAPI.md) | спецификация и запуск Swagger UI |
 | [Развёртывание](docs/Deployment.md) | сервисы, сборка, запуск, переменные среды |
 | [Чек-лист проверки](docs/QA-Checklist.md) | сквозные сценарии проверки трёх ТЗ |
+| [Трекер задач](docs/Tracker.md) | задачи GitHub, доска проекта, публикация Wiki |
 
 ## Структура проекта
 

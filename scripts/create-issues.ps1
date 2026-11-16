@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Creates GitHub issues with requirement identifiers for the offersToClients project.
 
@@ -20,7 +20,7 @@
 param(
     [string]$Owner = 'polosin1901-sys',
     [string]$Repo = 'banking',
-    [string]$Branch = 'third-task',
+    [string]$Branch = 'final-task',
     [switch]$DryRun
 )
 
@@ -361,7 +361,7 @@ $issues = @(
 
 function Resolve-Body {
     param([string]$Text, [string]$CodeBase)
-    return $Text.Replace('CODE_URL', $CodeBase)
+    return $Text.Replace('CODE_URL', $CodeBase).Replace('third-task', $Branch)
 }
 
 if ($DryRun) {
@@ -404,7 +404,33 @@ foreach ($label in $labels) {
     }
 }
 
+$existingIssues = @{}
+try {
+    $page = 1
+    do {
+        $batch = Invoke-RestMethod -Method Get -Uri "$apiUrl/issues?state=all&per_page=100&page=$page" -Headers $headers
+        foreach ($item in $batch) {
+            $existingIssues[$item.title] = $item
+        }
+        $page++
+    } while ($batch.Count -eq 100)
+} catch {
+    Write-Host "Could not read existing issues: $($_.Exception.Message)"
+}
+
 $created = foreach ($issue in $issues) {
+    if ($existingIssues.ContainsKey($issue.title)) {
+        $found = $existingIssues[$issue.title]
+        Write-Host "issue exists: $($issue.title) (#$($found.number))"
+        [pscustomobject]@{
+            Requirement = $issue.requirements
+            Number      = $found.number
+            Title       = $found.title
+            Url         = $found.html_url
+        }
+        continue
+    }
+
     $payload = @{
         title  = $issue.title
         body   = (Resolve-Body -Text $issue.body -CodeBase $codeUrl).Trim()
@@ -421,5 +447,6 @@ $created = foreach ($issue in $issues) {
 }
 
 $created | Format-Table -AutoSize
+New-Item -ItemType Directory -Force -Path 'docs/issues' | Out-Null
 $created | ConvertTo-Json -Depth 3 | Set-Content -Path 'docs/issues/created-issues.json' -Encoding UTF8
 Write-Host 'Mapping saved to docs/issues/created-issues.json'
