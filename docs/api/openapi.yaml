@@ -1,0 +1,338 @@
+openapi: 3.0.3
+info:
+  title: offersToClients API
+  description: |
+    Сервис персональных рекомендаций банковских продуктов.
+
+    API позволяет менеджеру управлять динамическими правилами, получать статистику их срабатываний,
+    а клиентам — получать рекомендации по идентификатору пользователя. Служебные эндпоинты
+    `/management/*` предназначены для внешней системы эксплуатации.
+  version: 0.0.1-SNAPSHOT
+  contact:
+    name: offersToClients
+servers:
+  - url: http://localhost:8080
+    description: локальный запуск
+
+tags:
+  - name: Recommendations
+    description: рекомендации продуктов для клиента
+  - name: Rules
+    description: управление динамическими правилами
+  - name: Statistics
+    description: статистика срабатываний правил
+  - name: Management
+    description: служебные эндпоинты для внешней системы
+
+paths:
+  /recommendation/{user_id}:
+    get:
+      tags: [Recommendations]
+      summary: Рекомендации для клиента
+      description: |
+        Возвращает объединённый список продуктов: статические правила (Invest500, Top Saving,
+        Простой кредит) и все динамические правила, которые совпали. Дубли по `id` удаляются.
+      operationId: getRecommendations
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: идентификатор клиента
+          schema:
+            type: string
+            format: uuid
+          example: cd515076-5d8a-44be-930e-8d4fcb79f42d
+      responses:
+        '200':
+          description: список рекомендаций (может быть пустым)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+              example:
+                user_id: cd515076-5d8a-44be-930e-8d4fcb79f42d
+                recommendations:
+                  - name: Invest500
+                    id: 147f6a0f-3b91-413b-ab99-87f081d60d5a
+                    text: Откройте Invest500 и начните инвестировать с 1000 рублей.
+        '400':
+          description: идентификатор клиента не является UUID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /rule:
+    get:
+      tags: [Rules]
+      summary: Список динамических правил
+      operationId: getAllRules
+      responses:
+        '200':
+          description: все правила с их запросами
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleListResponse'
+    post:
+      tags: [Rules]
+      summary: Создать динамическое правило
+      description: |
+        Правило срабатывает, когда все запросы в `rule` истинны. Каждый запрос проверяется перед
+        сохранением: тип запроса, количество и формат аргументов.
+      operationId: createRule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuleRequest'
+            example:
+              product_name: Invest 500
+              product_id: 147f6a0f-3b91-413b-ab99-87f081d60d5a
+              product_text: Откройте брокерский счёт и получите бонус.
+              rule:
+                - query: USER_OF
+                  arguments: [DEBIT]
+                  negate: false
+                - query: TRANSACTION_SUM_COMPARE
+                  arguments: [SAVING, DEPOSIT, ">", "1000"]
+                  negate: false
+      responses:
+        '200':
+          description: правило сохранено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleResponse'
+        '400':
+          description: некорректное правило
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Query TRANSACTION_SUM_COMPARE expects 4 argument(s), but got 3"
+
+  /rule/{id}:
+    delete:
+      tags: [Rules]
+      summary: Удалить динамическое правило
+      description: Вместе с правилом каскадно удаляются его запросы и статистика.
+      operationId: deleteRule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: идентификатор правила
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '204':
+          description: правило удалено
+        '404':
+          description: правило не найдено
+
+  /rule/stats:
+    get:
+      tags: [Statistics]
+      summary: Статистика срабатываний
+      description: |
+        Возвращает счётчики всех правил, включая правила, которые ещё ни разу не срабатывали
+        (`count = 0`).
+      operationId: getRuleStats
+      responses:
+        '200':
+          description: статистика по всем правилам
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleStatListResponse'
+              example:
+                stats:
+                  - rule_id: 1
+                    count: 5
+                  - rule_id: 2
+                    count: 0
+
+  /management/info:
+    get:
+      tags: [Management]
+      summary: Название и версия приложения
+      description: Значения берутся из `pom.xml` через `build-info`. Без build-info версия равна `unknown`.
+      operationId: getInfo
+      responses:
+        '200':
+          description: сведения о сборке
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagementInfo'
+              example:
+                name: offersToClients
+                version: 0.0.1-SNAPSHOT
+
+  /management/clear-caches:
+    post:
+      tags: [Management]
+      summary: Очистить кэши рекомендаций
+      description: Запрос без тела. После вызова следующие запросы рекомендаций читают данные из H2.
+      operationId: clearCaches
+      responses:
+        '204':
+          description: кэши очищены, тело ответа отсутствует
+
+components:
+  schemas:
+    Recommendation:
+      type: object
+      required: [name, id, text]
+      properties:
+        name:
+          type: string
+          description: краткое название продукта
+          example: Top Saving
+        id:
+          type: string
+          format: uuid
+          description: идентификатор продукта, используется для дедупликации
+          example: 59efc529-2fff-41af-baff-90ccd7402925
+        text:
+          type: string
+          description: описание продукта для клиента
+          example: Откройте Top Saving и получите до 5% на остаток.
+
+    RecommendationResponse:
+      type: object
+      required: [user_id, recommendations]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: идентификатор клиента из запроса
+        recommendations:
+          type: array
+          description: рекомендованные продукты; пустой массив, если предложений нет
+          items:
+            $ref: '#/components/schemas/Recommendation'
+
+    Query:
+      type: object
+      required: [query, arguments, negate]
+      properties:
+        query:
+          type: string
+          description: тип запроса динамического правила
+          enum:
+            - USER_OF
+            - ACTIVE_USER_OF
+            - TRANSACTION_SUM_COMPARE
+            - TRANSACTION_SUM_COMPARE_DEPOSIT_WITHDRAW
+          example: USER_OF
+        arguments:
+          type: array
+          description: |
+            Аргументы запроса в порядке, ожидаемом вычислителем:
+
+            * `USER_OF`, `ACTIVE_USER_OF` — `[тип продукта]`;
+            * `TRANSACTION_SUM_COMPARE` — `[тип продукта, тип транзакции, оператор, константа]`;
+            * `TRANSACTION_SUM_COMPARE_DEPOSIT_WITHDRAW` — `[тип продукта, оператор]`.
+          items:
+            type: string
+          example: [DEBIT]
+        negate:
+          type: boolean
+          description: инвертировать результат запроса
+          default: false
+
+    RuleRequest:
+      type: object
+      required: [product_name, product_id, product_text, rule]
+      properties:
+        product_name:
+          type: string
+          minLength: 1
+          example: Invest 500
+        product_id:
+          type: string
+          format: uuid
+          example: 147f6a0f-3b91-413b-ab99-87f081d60d5a
+        product_text:
+          type: string
+          minLength: 1
+          example: Откройте брокерский счёт и получите бонус.
+        rule:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Query'
+
+    RuleResponse:
+      allOf:
+        - $ref: '#/components/schemas/RuleRequest'
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: идентификатор правила
+              example: 1
+
+    RuleListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleResponse'
+
+    RuleStat:
+      type: object
+      required: [rule_id, count]
+      properties:
+        rule_id:
+          type: integer
+          format: int64
+          description: идентификатор правила
+          example: 1
+        count:
+          type: integer
+          format: int64
+          minimum: 0
+          description: количество успешных срабатываний
+          example: 5
+
+    RuleStatListResponse:
+      type: object
+      required: [stats]
+      properties:
+        stats:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleStat'
+
+    ManagementInfo:
+      type: object
+      required: [name, version]
+      properties:
+        name:
+          type: string
+          description: Maven artifactId приложения
+          example: offersToClients
+        version:
+          type: string
+          description: версия сборки; `unknown`, если build-info недоступен
+          example: 0.0.1-SNAPSHOT
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: описание ошибки для клиента
+          example: "product_name must not be blank"
