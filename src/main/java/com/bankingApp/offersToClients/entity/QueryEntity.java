@@ -40,6 +40,15 @@ public class QueryEntity {
     @Column(name = "negate", nullable = false)
     private boolean negate;
 
+    /**
+     * Zero-based position of the query inside its rule.
+     *
+     * <p>Hibernate 7 no longer writes the order column of an inverse collection, so the position
+     * is assigned by {@code RuleEntity#addQuery} and read back through {@code @OrderBy}.</p>
+     */
+    @Column(name = "position", nullable = false)
+    private int position;
+
     @ElementCollection
     @CollectionTable(
             name = "rule_query_argument",
@@ -72,6 +81,10 @@ public class QueryEntity {
 
     void setRule(RuleEntity rule) {
         this.rule = rule;
+    }
+
+    void setPosition(int position) {
+        this.position = position;
     }
 
     public Long getId() {

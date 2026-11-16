@@ -7,7 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderColumn;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class RuleEntity {
     private String productText;
 
     @OneToMany(mappedBy = "rule", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderColumn(name = "position")
+    @OrderBy("position ASC")
     private List<QueryEntity> rule = new ArrayList<>();
 
     protected RuleEntity() {
@@ -67,10 +67,14 @@ public class RuleEntity {
     /**
      * Appends a query and links it back to this rule.
      *
+     * <p>The position is calculated from the current list size, so the stored order matches the
+     * order in which the manager added the queries.</p>
+     *
      * @param query query to append
      */
     public void addQuery(QueryEntity query) {
         query.setRule(this);
+        query.setPosition(this.rule.size());
         this.rule.add(query);
     }
 
