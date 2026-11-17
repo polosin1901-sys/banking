@@ -53,6 +53,9 @@ public enum ComparisonOperator {
      */
     public abstract boolean test(int left, int right);
 
+    /**
+     * @return textual form of the operator, for example {@code >=}
+     */
     public String symbol() {
         return symbol;
     }

@@ -44,6 +44,14 @@ public class RuleEntity {
     protected RuleEntity() {
     }
 
+    /**
+     * Creates a rule with its queries.
+     *
+     * @param productName product name shown to the client
+     * @param productId   product identifier
+     * @param productText marketing description
+     * @param rule        queries that must all match
+     */
     public RuleEntity(String productName, UUID productId, String productText,
                       List<QueryEntity> rule) {
         this.productName = productName;
@@ -78,22 +86,37 @@ public class RuleEntity {
         this.rule.add(query);
     }
 
+    /**
+     * @return generated rule identifier
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * @return product name shown to the client
+     */
     public String getProductName() {
         return productName;
     }
 
+    /**
+     * @return product identifier used for de-duplication
+     */
     public UUID getProductId() {
         return productId;
     }
 
+    /**
+     * @return marketing description of the product
+     */
     public String getProductText() {
         return productText;
     }
 
+    /**
+     * @return queries in the order in which they were added
+     */
     public List<QueryEntity> getRule() {
         return rule;
     }

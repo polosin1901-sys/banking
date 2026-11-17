@@ -32,23 +32,42 @@ public class RuleStatEntity {
     @Column(name = "hit_count", nullable = false)
     private long count;
 
+    /**
+     * Creates a statistics row.
+     *
+     * @param id    row identifier
+     * @param rule  counted rule
+     * @param count number of rule matches
+     */
     public RuleStatEntity(Long id, RuleEntity rule, long count) {
         this.id = id;
         this.rule = rule;
         this.count = count;
     }
 
+    /**
+     * Creates an empty entity for JPA.
+     */
     public RuleStatEntity() {
     }
 
+    /**
+     * @return generated statistics row identifier
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * @return counted rule
+     */
     public RuleEntity getRule() {
         return rule;
     }
 
+    /**
+     * @return number of successful rule matches
+     */
     public long getCount() {
         return count;
     }

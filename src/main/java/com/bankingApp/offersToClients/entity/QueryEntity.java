@@ -61,6 +61,13 @@ public class QueryEntity {
     protected QueryEntity() {
     }
 
+    /**
+     * Creates a query of a dynamic rule.
+     *
+     * @param query     query type name
+     * @param arguments query arguments in evaluator order
+     * @param negate    whether the result must be inverted
+     */
     public QueryEntity(String query, List<String> arguments, boolean negate) {
         this.query = query;
         this.negate = negate;
@@ -87,22 +94,37 @@ public class QueryEntity {
         this.position = position;
     }
 
+    /**
+     * @return generated query identifier
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * @return rule that owns this query
+     */
     public RuleEntity getRule() {
         return rule;
     }
 
+    /**
+     * @return query type name, see {@code QueryType}
+     */
     public String getQuery() {
         return query;
     }
 
+    /**
+     * @return {@code true} when the query result must be inverted
+     */
     public boolean isNegate() {
         return negate;
     }
 
+    /**
+     * @return arguments in the order expected by the evaluator
+     */
     public List<String> getArguments() {
         return arguments;
     }
