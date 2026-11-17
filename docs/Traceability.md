@@ -6,7 +6,9 @@
 `docs/issues/created-issues.json`.
 
 Все задачи объединены pull request [#19](https://github.com/polosin1901-sys/banking/pull/19)
-(`final-task` → `third-task`), в описании которого перечислены Closes #4…#18.
+(`final-task` → `third-task`), в описании которого перечислены Closes #4…#18. Запрос слит
+в ветку `third-task` коммитом `78d82af`, поэтому все 15 задач закрыты как выполненные,
+а реализация доступна в `main`.
 
 ## Как поддерживается связь
 
