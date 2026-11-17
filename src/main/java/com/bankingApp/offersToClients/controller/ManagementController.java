@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Service endpoints used by an external system to inspect and maintain the application.
+ */
 @RestController
 @RequestMapping("/management")
 public class ManagementController {
@@ -25,11 +28,18 @@ public class ManagementController {
             ObjectProvider<BuildProperties> buildPropertiesProvider,
             @Value("${spring.application.name:offersToClients}") String applicationName,
             ManagementService managementService) {
+        // BuildProperties exists only when the build-info goal ran (Maven build), not in plain IDE runs.
         this.buildProperties = buildPropertiesProvider.getIfAvailable();
         this.applicationName = applicationName;
         this.managementService = managementService;
     }
 
+    /**
+     * Returns the application name and version taken from {@code pom.xml}.
+     *
+     * @return name and version; the version falls back to {@code unknown} when build information
+     *         is not available
+     */
     @GetMapping("/info")
     public ManagementInfoResponse getInfo() {
         if (buildProperties == null) {
@@ -42,6 +52,11 @@ public class ManagementController {
         );
     }
 
+    /**
+     * Drops all recommendation caches.
+     *
+     * @return {@code 204 No Content} with an empty body
+     */
     @PostMapping("/clear-caches")
     public ResponseEntity<Void> clearCaches() {
         managementService.clearCaches();

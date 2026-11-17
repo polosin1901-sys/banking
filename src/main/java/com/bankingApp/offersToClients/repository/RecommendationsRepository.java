@@ -10,6 +10,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
+/**
+ * Read-only access to client transactions in the recommendations (H2) database.
+ *
+ * <p>The repository exposes exactly three aggregate queries used by recommendation rules:
+ * transaction count, transaction sum, and deposit/withdraw sums. Results are cached in
+ * {@link RecommendationsCache} and can be dropped through {@code POST /management/clear-caches}.</p>
+ */
 @Repository
 public class RecommendationsRepository {
 
@@ -46,6 +53,13 @@ public class RecommendationsRepository {
         this.cache = cache;
     }
 
+    /**
+     * Counts client transactions of the given product type.
+     *
+     * @param userId      client identifier
+     * @param productType product type filter
+     * @return number of transactions, {@code 0} when there are none
+     */
     public int countTransactions(UUID userId, ProductType productType) {
         return cache.count(userId, productType, () -> {
             Integer count = jdbcTemplate.queryForObject(
@@ -58,6 +72,14 @@ public class RecommendationsRepository {
         });
     }
 
+    /**
+     * Sums client transactions of the given product and transaction type.
+     *
+     * @param userId          client identifier
+     * @param productType     product type filter
+     * @param transactionType transaction type filter
+     * @return total amount, {@code 0} when there are no transactions
+     */
     public int sumTransactions(UUID userId,
                                ProductType productType,
                                TransactionType transactionType) {
@@ -73,6 +95,13 @@ public class RecommendationsRepository {
         });
     }
 
+    /**
+     * Returns deposit and withdraw sums of the given product type in one query.
+     *
+     * @param userId      client identifier
+     * @param productType product type filter
+     * @return pair of deposit and withdraw sums
+     */
     public TransactionSums sumDepositAndWithdraw(UUID userId, ProductType productType) {
         return cache.depositAndWithdraw(userId, productType, () ->
                 jdbcTemplate.queryForObject(

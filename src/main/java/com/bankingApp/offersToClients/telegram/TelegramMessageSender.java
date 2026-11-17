@@ -8,6 +8,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
+/**
+ * Sends plain text messages to Telegram chats.
+ *
+ * <p>When the bot is not configured (no token), sending is skipped with a warning instead of
+ * failing the caller.</p>
+ */
 @Component
 public class TelegramMessageSender {
 
@@ -19,6 +25,12 @@ public class TelegramMessageSender {
         this.telegramBot = telegramBot;
     }
 
+    /**
+     * Sends a message and logs a failure without throwing.
+     *
+     * @param chatId target chat identifier
+     * @param text   message body
+     */
     public void sendMessage(Long chatId, String text) {
         TelegramBot bot = telegramBot.getIfAvailable();
         if (bot == null) {

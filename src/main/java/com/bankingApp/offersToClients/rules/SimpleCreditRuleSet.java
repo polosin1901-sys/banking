@@ -10,6 +10,12 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Static rule for the {@code Простой кредит} product.
+ *
+ * <p>Fires when the client has no credit products, withdrew more than 100 000 from debit accounts,
+ * and the debit account has more deposits than withdrawals.</p>
+ */
 @Component
 public class SimpleCreditRuleSet implements RecommendationRuleSet {
 

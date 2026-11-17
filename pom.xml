@@ -10,8 +10,8 @@
 	<groupId>com.bankingApp</groupId>
 	<artifactId>offersToClients</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>offersToClients</name>
+	<description>Bank product recommendation service with dynamic rules, statistics and a Telegram bot</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -83,7 +83,7 @@
 	</dependencies>
 
 	<build>
-	<plugins>
+		<plugins>
 		<plugin>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-maven-plugin</artifactId>
@@ -95,7 +95,42 @@
 				</execution>
 			</executions>
 		</plugin>
-	</plugins>
-</build>
+		<!-- Publishes the canonical OpenAPI document at /openapi.yaml without duplicating it in src. -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-resources-plugin</artifactId>
+			<executions>
+				<execution>
+					<id>copy-openapi-spec</id>
+					<phase>process-resources</phase>
+					<goals>
+						<goal>copy-resources</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+						<resources>
+							<resource>
+								<directory>docs/api</directory>
+								<includes>
+									<include>openapi.yaml</include>
+								</includes>
+							</resource>
+						</resources>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+		<!-- Generates API documentation from the Javadoc comments of the main sources. -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-javadoc-plugin</artifactId>
+			<configuration>
+				<sourcepath>${project.basedir}/src/main/java</sourcepath>
+				<doclint>none</doclint>
+				<quiet>true</quiet>
+			</configuration>
+		</plugin>
+		</plugins>
+	</build>
 
 </project>

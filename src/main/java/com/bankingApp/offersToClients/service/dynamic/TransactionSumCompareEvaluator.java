@@ -10,6 +10,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Evaluates the {@code TRANSACTION_SUM_COMPARE} query: transaction sum of the given product and
+ * transaction type is compared with a constant using the operator from the arguments.
+ */
 @Component
 public class TransactionSumCompareEvaluator implements QueryEvaluator {
 

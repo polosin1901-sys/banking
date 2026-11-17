@@ -10,6 +10,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Evaluates the {@code TRANSACTION_SUM_COMPARE_DEPOSIT_WITHDRAW} query: deposits are compared with
+ * withdrawals of the given product type using the operator from the arguments.
+ */
 @Component
 public class TransactionSumDepositWithdrawCompareEvaluator implements QueryEvaluator {
 
