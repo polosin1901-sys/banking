@@ -10,8 +10,8 @@
 	<groupId>com.bankingApp</groupId>
 	<artifactId>offersToClients</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>offersToClients</name>
+	<description>Bank product recommendation service with dynamic rules, statistics and a Telegram bot</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -39,12 +39,30 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-liquibase</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -57,14 +75,61 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.github.pengrad</groupId>
+			<artifactId>java-telegram-bot-api</artifactId>
+			<version>8.3.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
+		<plugin>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+			<executions>
+				<execution>
+					<goals>
+						<goal>build-info</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+		<!-- Publishes the canonical OpenAPI document at /openapi.yaml without duplicating it in src. -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-resources-plugin</artifactId>
+			<executions>
+				<execution>
+					<id>copy-openapi-spec</id>
+					<phase>process-resources</phase>
+					<goals>
+						<goal>copy-resources</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+						<resources>
+							<resource>
+								<directory>docs/api</directory>
+								<includes>
+									<include>openapi.yaml</include>
+								</includes>
+							</resource>
+						</resources>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+		<!-- Generates API documentation from the Javadoc comments of the main sources. -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-javadoc-plugin</artifactId>
+			<configuration>
+				<sourcepath>${project.basedir}/src/main/java</sourcepath>
+				<doclint>none</doclint>
+				<quiet>true</quiet>
+			</configuration>
+		</plugin>
 		</plugins>
 	</build>
 
