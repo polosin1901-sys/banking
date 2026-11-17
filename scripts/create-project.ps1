@@ -84,6 +84,7 @@ query($owner: String!, $repo: String!) {
 '@ -Variables @{ owner = $Owner; repo = $Repo }
 
 $ownerId = $lookup.viewer.id
+$repoId = $lookup.repository.id
 Write-Host "Owner: $($lookup.viewer.login) ($ownerId)"
 
 $created = Invoke-GraphQl -Token $token -Query @'
@@ -96,6 +97,16 @@ mutation($ownerId: ID!, $title: String!) {
 
 $project = $created.createProjectV2.projectV2
 Write-Host "Project created: $($project.url)"
+
+# Link the board to the repository so it appears on the repository Projects tab.
+Invoke-GraphQl -Token $token -Query @'
+mutation($projectId: ID!, $repositoryId: ID!) {
+  linkProjectV2ToRepository(input: { projectId: $projectId, repositoryId: $repositoryId }) {
+    repository { name }
+  }
+}
+' -Variables @{ projectId = $project.id; repositoryId = $repoId } | Out-Null
+Write-Host "Linked to $Owner/$Repo"
 
 # Status field and its options come with a new project board.
 $fields = Invoke-GraphQl -Token $token -Query @'
