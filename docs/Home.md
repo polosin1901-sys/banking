@@ -44,6 +44,9 @@
 | [Чек-лист проверки](QA-Checklist) | сквозные сценарии проверки трёх ТЗ |
 | [Трекер задач](Tracker) | задачи GitHub с ID требований, доска проекта, публикация Wiki |
 
+Доска проекта: [offersToClients](https://github.com/users/polosin1901-sys/projects/2);
+задачи: [Issues](https://github.com/polosin1901-sys/banking/issues?q=is%3Aissue).
+
 ## Быстрый старт
 
 ```powershell

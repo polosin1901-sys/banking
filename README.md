@@ -79,6 +79,11 @@ Swagger UI после запуска: <http://localhost:8080/swagger-ui.html>.
 | [Чек-лист проверки](docs/QA-Checklist.md) | сквозные сценарии проверки трёх ТЗ |
 | [Трекер задач](docs/Tracker.md) | задачи GitHub, доска проекта, публикация Wiki |
 
+Публичные ссылки: [Wiki](https://github.com/polosin1901-sys/banking/wiki) ·
+[доска проекта](https://github.com/users/polosin1901-sys/projects/2) ·
+[задачи](https://github.com/polosin1901-sys/banking/issues?q=is%3Aissue) ·
+[реализация](https://github.com/polosin1901-sys/banking/pull/19).
+
 ## Структура проекта
 
 ```text
